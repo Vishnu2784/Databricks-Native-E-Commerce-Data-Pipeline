@@ -43,3 +43,27 @@ graph TD
     style D fill:#C0C0C0,stroke:#fff,stroke-width:2px,color:#fff
     style E fill:#E25A1C,stroke:#fff,stroke-width:2px,color:#fff
     style F fill:#FFD700,stroke:#fff,stroke-width:2px,color:#000
+## 🌊 The Medallion Data Flow
+
+* **Ingestion (Mock API):** A custom Python engine yields nested JSON web-log data directly into Unity Catalog Volumes, bypassing cluster memory limits and simulating real-world API pagination.
+* **🥉 Bronze Layer:** Raw JSON-Lines data is incrementally persisted exactly as it arrives, creating an immutable historical record.
+* **🥈 Silver Layer:** PySpark dynamically flattens complex nested structs (`.*`), enforces strict schema typing (e.g., Timestamps), drops duplicate events, and rewrites the data into highly optimized **Parquet** format.
+* **🥇 Gold Layer:** Clean Parquet data is exposed via temporary views and queried using PySpark SQL to construct analytical tables (e.g., Device Activity, Item Revenue), fully prepped for BI consumption.
+
+---
+
+## 🚀 Technical Differentiators
+
+* **100% Code-Driven:** Zero reliance on graphical mapping or UI-based ETL tools. All logic is handled programmatically.
+* **Columnar Optimization:** Transitioned raw row-based JSON to columnar Parquet, drastically reducing downstream query scan times and compute costs.
+* **Serverless Native:** Designed for and executed entirely on Databricks Serverless Compute.
+
+---
+
+## 📂 Repository Structure
+
+```text
+├── Bronze_layer.py    # Generates raw JSON and writes directly to Unity Catalog
+├── Silver_layer.py    # PySpark engine to flatten JSON and write optimized Parquet
+├── Gold_layer.py      # PySpark SQL engine for final business metric aggregations
+└── README.md
