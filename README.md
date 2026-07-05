@@ -35,11 +35,6 @@ graph TD
         E -->|Aggregates Metrics| F[(🥇 Gold Layer<br/>Business Parquet)]
     end
 
-├── 01_bronze_ingestion.py    # Python generator writing raw JSON directly to Unity Catalog
-├── 02_silver_processing.py   # PySpark logic to read JSON, flatten structs, and write Parquet
-├── 03_gold_aggregation.py    # PySpark SQL queries generating final business metrics
-└── README.md
-
     style A fill:#3776AB,stroke:#fff,stroke-width:2px,color:#fff
     style B fill:#CD7F32,stroke:#fff,stroke-width:2px,color:#fff
     style C fill:#E25A1C,stroke:#fff,stroke-width:2px,color:#fff
