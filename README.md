@@ -26,39 +26,54 @@ Why? Because real-world Data Engineering is about managing constraints, chaos, a
 
 ```mermaid
 graph TD
-    A[Mock API Engine<br/>Python Generator] -->|Yields JSON Batches| B
+    A[Mock API Engine: Python Generator] -->|Yields JSON Batches| B
     
-    subgraph Databricks Unity Catalog Volumes
-        B[(🥉 Bronze Layer<br/>Raw JSON-Lines)] -->|PySpark Read| C[Silver Processing Engine<br/>Serverless Compute]
-        C -->|Flattens Structs & Casts Types| D[(🥈 Silver Layer<br/>Clean Parquet)]
-        D -->|PySpark SQL| E[Gold Aggregation Engine<br/>Temp Views]
-        E -->|Aggregates Metrics| F[(🥇 Gold Layer<br/>Business Parquet)]
+    subgraph Unity Catalog Volumes
+        B[(Bronze Layer: Raw JSON)] -->|PySpark Read| C[Silver Engine: Serverless]
+        C -->|Flattens & Casts Types| D[(Silver Layer: Clean Parquet)]
+        D -->|PySpark SQL| E[Gold Engine: Temp Views]
+        E -->|Aggregates Metrics| F[(Gold Layer: Business Parquet)]
     end
 
     style A fill:#3776AB,stroke:#fff,stroke-width:2px,color:#fff
-    style B fill:#CD7F32,stroke:#fff,stroke-width:2px,color:#fff  
+    style B fill:#CD7F32,stroke:#fff,stroke-width:2px,color:#fff
     style C fill:#E25A1C,stroke:#fff,stroke-width:2px,color:#fff
-    style D fill:#C0C0C0,stroke:#fff,stroke-width:2px,color:#fff
+    style D fill:#C0C0C0,stroke:#fff,stroke-width:2px,color:#000
     style E fill:#E25A1C,stroke:#fff,stroke-width:2px,color:#fff
     style F fill:#FFD700,stroke:#fff,stroke-width:2px,color:#000
+```
 
-Ingestion (Mock API): A custom Python engine yields nested JSON web-log data directly into Unity Catalog Volumes, bypassing cluster memory limits and simulating real-world API pagination.
+* **Ingestion (Mock API):** A custom Python engine yields nested JSON web-log data directly into Unity Catalog Volumes, bypassing cluster memory limits and simulating real-world API pagination.
+* **🥉 Bronze Layer:** Raw JSON-Lines data is incrementally persisted exactly as it arrives, creating an immutable historical record.
+* **🥈 Silver Layer:** PySpark dynamically flattens complex nested structs (`.*`), enforces strict schema typing (e.g., Timestamps), drops duplicate events, and rewrites the data into highly optimized **Parquet** format.
+* **🥇 Gold Layer:** Clean Parquet data is exposed via temporary views and queried using PySpark SQL to construct analytical tables (e.g., Device Activity, Item Revenue), fully prepped for BI consumption.
 
-🥉 Bronze Layer: Raw JSON-Lines data is incrementally persisted exactly as it arrives, creating an immutable historical record.
+---
 
-🥈 Silver Layer: PySpark dynamically flattens complex nested structs (.*), enforces strict schema typing (e.g., Timestamps), drops duplicate events, and rewrites the data into highly optimized Parquet format.
+## 🚀 Technical Highlights
 
-🥇 Gold Layer: Clean Parquet data is exposed via temporary views and queried using PySpark SQL to construct analytical tables (e.g., Device Activity, Item Revenue), fully prepped for BI consumption.
+* **100% Code-Driven:** Zero reliance on graphical mapping or UI-based ETL tools. All logic is handled programmatically.
+* **Columnar Optimization:** Transitioned raw row-based JSON to columnar Parquet, drastically reducing downstream query scan times and compute costs.
+* **Serverless Native:** Designed for and executed entirely on Databricks Serverless Compute.
 
-🚀 Technical Highlights
-100% Code-Driven: Zero reliance on graphical mapping or UI-based ETL tools. All logic is handled programmatically.
+---
 
-Columnar Optimization: Transitioned raw row-based JSON to columnar Parquet, drastically reducing downstream query scan times and compute costs.
+## 📂 Repository Structure
 
-Serverless Native: Designed for and executed entirely on Databricks Serverless Compute.
+```text
+├── Bronze_layer.py    # Generates raw JSON and writes directly to Unity Catalog
+├── Silver_layer.py    # PySpark engine to flatten JSON and write optimized Parquet
+├── Gold_layer.py      # PySpark SQL engine for final business metric aggregations
+└── README.md
+```
 
-📂 Repository Structure
+---
 
+## 🛠️ Execution Guide
 
-
-
+1. **Import:** Clone or import these scripts into your Databricks Workspace.
+2. **Configure:** Ensure **Unity Catalog** is enabled. Create a Volume path for the project.
+3. **Route:** Update the `volume_path` variables within the scripts to match your catalog structure (e.g., `/Volumes/<catalog>/<schema>/<volume>/`).
+4. **Run `Bronze_layer.py`:** Manufactures the raw source data into your volume.
+5. **Run `Silver_layer.py`:** Parses the JSON and writes clean Parquet to the Silver directory.
+6. **Run `Gold_layer.py`:** Generates the final analytical tables.
